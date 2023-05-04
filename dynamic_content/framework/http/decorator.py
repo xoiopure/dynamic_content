@@ -26,8 +26,6 @@ def require_ssl(function):
             else:
                 raise TypeError
         res = ssl.conditional_redirect(context.request)
-        if res is None:
-            return function(context, *args, **kwargs)
-        else:
-            return res
+        return function(context, *args, **kwargs) if res is None else res
+
     return _inner

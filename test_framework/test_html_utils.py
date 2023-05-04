@@ -60,7 +60,7 @@ class TestElementsRendering(unittest.TestCase):
                     for c in content
                 )
 
-                rendered_classes = 'class="{}"'.format(' '.join(classes))
+                rendered_classes = f"""class="{' '.join(classes)}\""""
 
                 rendered = '<{tag} {}>{}</{tag}>'.format(
                     rendered_classes, rendered_content, tag=list_type_name
@@ -94,9 +94,9 @@ class TestElementsRendering(unittest.TestCase):
                     for c in content
                 )
 
-                rendered_classes = 'class="{}"'.format(' '.join(classes))
+                rendered_classes = f"""class="{' '.join(classes)}\""""
 
-                rendered_id = 'id="{}"'.format(testid)
+                rendered_id = f'id="{testid}"'
 
                 rendered = (
                     '<{tag} {} {}>{}</{tag}>'.format(
@@ -124,15 +124,13 @@ class TestElementsRendering(unittest.TestCase):
         # test without classes and id's
 
         rendered_options = ''.join(
-            '<option value="{}">{}</option>'.format(value, content)
+            f'<option value="{value}">{content}</option>'
             for value, content in contents
         )
 
         element = html.Select(*contents, name=name)
 
-        rendered_element = '<select name="{}">{}</select>'.format(
-            name, rendered_options
-        )
+        rendered_element = f'<select name="{name}">{rendered_options}</select>'
 
         self.assertEqual(str(element), rendered_element)
 
@@ -147,22 +145,13 @@ class TestElementsRendering(unittest.TestCase):
         rendered_html_element = str(element)
 
         # make sure the classes are present
-        self.assertIn(
-            'class="{}"'.format(' '.join(classes)),
-            rendered_html_element
-        )
+        self.assertIn(f"""class="{' '.join(classes)}\"""", rendered_html_element)
 
         # make sure the id is present
-        self.assertIn(
-            'id="{}"'.format(testid),
-            rendered_html_element
-        )
+        self.assertIn(f'id="{testid}"', rendered_html_element)
 
         # make sure the name is present
-        self.assertIn(
-            'name="{}"'.format(name),
-            rendered_html_element
-        )
+        self.assertIn(f'name="{name}"', rendered_html_element)
 
         # ensure the tag is correct
         self.assertIn(
@@ -175,10 +164,7 @@ class TestElementsRendering(unittest.TestCase):
         )
 
         # ensure the content is present and in order
-        self.assertIn(
-            '>{}</select>'.format(rendered_options),
-            rendered_html_element
-        )
+        self.assertIn(f'>{rendered_options}</select>', rendered_html_element)
 
     def test_table_element(self):
         content = (
@@ -187,12 +173,7 @@ class TestElementsRendering(unittest.TestCase):
         )
 
         rows = (
-            '<tr>{}</tr>'.format(
-                ''.join(
-                    '<td>{}</td>'.format(elem)
-                    for elem in row
-                )
-            )
+            '<tr>{}</tr>'.format(''.join(f'<td>{elem}</td>' for elem in row))
             for row in content
         )
 

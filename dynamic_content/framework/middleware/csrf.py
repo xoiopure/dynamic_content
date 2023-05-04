@@ -51,12 +51,11 @@ class AntiCSRFMiddleware(Handler):
         if (
             _form_token_name in request.query
             and _form_identifier_name in request.query
+        ) and _validate(
+            request.query[_form_identifier_name][0],
+            request.query[_form_token_name][0],
         ):
-            if _validate(
-                request.query[_form_identifier_name][0],
-                request.query[_form_token_name][0]
-            ):
-                return None
+            return None
         return response.Response(code=403)
 
 
@@ -65,10 +64,9 @@ def _validate(fid, token):
         a = ARToken.get(
             form_id=fid,
             token=binascii.unhexlify(
-                (token.encode()
-                if not isinstance(token, bytes) else token)
-                )
-            )
+                token if isinstance(token, bytes) else token.encode()
+            ),
+        )
         if a:
             a.delete_instance()
             return True

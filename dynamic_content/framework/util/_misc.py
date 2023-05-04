@@ -26,10 +26,7 @@ class Maybe(Monad):
         return self.content
 
     def bind(self, func):
-        if self.content is None:
-            return self
-        else:
-            return func(self.content)
+        return self if self.content is None else func(self.content)
 
 
 def catch_vardump(func):

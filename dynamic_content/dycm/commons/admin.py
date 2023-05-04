@@ -16,10 +16,15 @@ class MenuAdminController:
         menus = _model.Menu.select()
         l = [
             [
-                html.A(item.id, href='menus/' + item.machine_name),
-                html.A(i18n.translate(item.machine_name), href='menus/' + item.machine_name),
-                html.Checkbox(checked=bool(item.enabled))
-            ] for item in menus]
+                html.A(item.id, href=f'menus/{item.machine_name}'),
+                html.A(
+                    i18n.translate(item.machine_name),
+                    href=f'menus/{item.machine_name}',
+                ),
+                html.Checkbox(checked=bool(item.enabled)),
+            ]
+            for item in menus
+        ]
         dc_obj.context['content'] = csrf.SecureForm(html.TableElement(*l, classes={'menu-overview'}))
         dc_obj.context['title'] = 'Menus Overview'
         dc_obj.config['theme'] = 'admin_theme'

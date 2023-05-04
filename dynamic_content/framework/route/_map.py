@@ -105,19 +105,15 @@ def handler_from_container(container, method, headers):
         return None
     handler = getattr(handler_container, method)
 
-    if handler is not None:
-        headers = set(headers.values())
-        if isinstance(handler, (tuple, list)):
-            l = sorted(handler, key=lambda a: len(a.headers))
-            for a in l:
-                if a.headers <= headers:
-                    return a
-            else:
-                return None
-        else:
-            if not handler.headers <= headers:
-                return None
-            return handler
+    if handler is None:
+        return None
+    headers = set(headers.values())
+    if not isinstance(handler, (tuple, list)):
+        return handler if handler.headers <= headers else None
+    l = sorted(handler, key=lambda a: len(a.headers))
+    for a in l:
+        if a.headers <= headers:
+            return a
     else:
         return None
 
@@ -129,7 +125,7 @@ class PathMap(Segment):
     def __init__(self, **kwargs):
         super().__init__('/', **kwargs)
         logging.getLogger(__name__).debug(
-            'Utilizing PathMapType:   ' + self.__class__.__name__
+            f'Utilizing PathMapType:   {self.__class__.__name__}'
         )
         self._controller_classes = []
 
@@ -247,10 +243,7 @@ class TreePathMap(PathMap):
             elif isinstance(segment, TypeArg):
                 new = old.setdefault(segment.type, Segment(segment.name))
             else:
-                raise TypeError(
-                    'Expected Type {} or {} not {}'.format(
-                        str, type, type(segment))
-                        )
+                raise TypeError(f'Expected Type {str} or {type} not {type(segment)}')
 
             if not isinstance(new, Segment):
                 if isinstance(segment, str):
@@ -260,10 +253,7 @@ class TreePathMap(PathMap):
                 elif isinstance(segment, TypeArg):
                     new = old[segment.type] = Segment(segment.name, new)
                 else:
-                    raise TypeError(
-                        'Expected Type {} or {} not {}'.format(
-                            str, type, type(segment))
-                            )
+                    raise TypeError(f'Expected Type {str} or {type} not {type(segment)}')
             old = new
 
         m = new
@@ -355,7 +345,7 @@ class TreePathMap(PathMap):
                 request.method,
                 request.headers
                 )
-            if not handler is None:
+            if handler is not None:
                 return handler, iargs, ikwargs
 
 
@@ -363,9 +353,8 @@ class TreePathMap(PathMap):
             raise exceptions.MethodHandlerNotFound(
             'Mo handler found for request method {} for path {}'.format(
             request.method, request.path))
-        else:
-            handler, args, kwargs = wildcard
-            return handler, args + (request.path, ), kwargs
+        handler, args, kwargs = wildcard
+        return handler, args + (request.path, ), kwargs
 
 
 class MultiTableSegment(Segment):
@@ -386,8 +375,8 @@ class MultiTableSegment(Segment):
                     b = self[first] = MultiTableSegment(first, b)
                 elif not isinstance(b, MultiTableSegment):
                     raise exceptions.ControllerError(
-                        'Expected Handler, or Segment, found {}'.format(type(b))
-                        )
+                        f'Expected Handler, or Segment, found {type(b)}'
+                    )
             else:
                 b = self[first] = MultiTableSegment(first)
 
@@ -408,7 +397,7 @@ class MultiTableSegment(Segment):
 
     def segment_get_handler(self, path, method, headers):
         rest = collections.deque()
-        p = '/' + path if not path.startswith('/') else path
+        p = path if path.startswith('/') else f'/{path}'
 
         def rethandler_func(container):
             handler = handler_from_container(container, method, headers)
@@ -540,7 +529,7 @@ class MultiTablePathMap(MultiTableSegment, PathMap):
                     stack.r.append(s)
                 else:
                     stack.p.append(s)
-            elif isinstance(s, type) or isinstance(s, TypeArg):
+            elif isinstance(s, (type, TypeArg)):
                 stack.flush_p()
                 stack.r.append(s)
         else:
@@ -549,11 +538,14 @@ class MultiTablePathMap(MultiTableSegment, PathMap):
         return stack.r
 
     def add_path(self, path:str, handler):
-        path = path if path.startswith('/') else '/' + path
+        path = path if path.startswith('/') else f'/{path}'
         self.print_info(path, handler)
         path_list = self.parse_path(path)
-        typeargs = tuple(filter(lambda a: (isinstance(a, type)
-            or isinstance(a, TypeArg) or a == '**'), path_list))
+        typeargs = tuple(
+            filter(
+                lambda a: isinstance(a, (type, TypeArg)) or a == '**', path_list
+            )
+        )
         handler.typeargs = typeargs
         self.add_to_container(self.get_handler_container(path_list), handler)
 

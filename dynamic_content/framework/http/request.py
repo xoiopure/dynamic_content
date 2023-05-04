@@ -48,10 +48,7 @@ class Request(object):
         :return:
         """
         parent = self.path.rsplit('/', 1)
-        if not parent or parent[0] == '':
-            return '/'
-        else:
-            return parent[0]
+        return '/' if not parent or parent[0] == '' else parent[0]
 
     @classmethod
     def from_path_and_post(

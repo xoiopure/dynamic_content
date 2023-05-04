@@ -36,10 +36,7 @@ def init_tables(settings):
                 except Exception as e:
                     logging.getLogger(__name__).error('create_table:{}'.format(e))
 
-    c = {
-        module: import_module('dycm.' + module)
-        for module in settings['modules']
-    }
+    c = {module: import_module(f'dycm.{module}') for module in settings['modules']}
 
     for module in c.values():
         _init_module(module)
@@ -77,38 +74,43 @@ def initialize(settings):
 
     permissions = (
         (
-            user_module.users.GUEST_GRP, 'unauthorized guests',
+            user_module.users.GUEST_GRP,
+            'unauthorized guests',
             (
                 'access login page',
                 'access content type article',
                 'access common login',
-                'access node overview'
-            )
-        ), (
-            user_module.users.AUTH, 'any authorized user',
+                'access node overview',
+            ),
+        ),
+        (
+            user_module.users.AUTH,
+            'any authorized user',
             (
                 'access logout',
                 'access unpublished content type article',
                 'access content type article',
                 'access common ' + 'user_information',
                 'view own user info',
-                'access node overview'
-            )
-        ), (
-            ADMIN_GRP, 'admin',
+                'access node overview',
+            ),
+        ),
+        (
+            ADMIN_GRP,
+            'admin',
             (
                 'edit user accounts',
                 'access users overview',
                 'edit content type article',
                 'add content type article',
-                'access common ' + admin_menu_common,
+                f'access common {admin_menu_common}',
                 'access admin pages',
                 'view other user info',
                 'view permissions',
                 'edit permissions',
-                'access node overview'
-            )
-        )
+                'access node overview',
+            ),
+        ),
     )
 
     user_module.users.add_acc_grp('admin', ADMIN_GRP)

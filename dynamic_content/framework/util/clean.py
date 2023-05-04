@@ -34,8 +34,8 @@ def clean_text(text, forbidden_tags):
     :return: cleaned text
     """
     for tag in forbidden_tags:
-        regex2 = _regex_provider('<' + tag + '.*?>')
-        regex3 = _regex_provider('</' + tag + '.*?>')
+        regex2 = _regex_provider(f'<{tag}.*?>')
+        regex3 = _regex_provider(f'</{tag}.*?>')
         text = re.sub(regex2, '', text)
         text = re.sub(regex3, '', text)
     return text

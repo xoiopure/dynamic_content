@@ -58,7 +58,7 @@ def filter_args(types, args, kwargs):
                 yield filtered.__next__()
             except StopIteration:
                 # in none of that succeeded we throw an exception
-                raise TypeError('no argument with type {} found'.format(type_))
+                raise TypeError(f'no argument with type {type_} found')
 
 
 class apply_to_type:
@@ -130,16 +130,11 @@ class apply_to_type:
 
                 def applyd():
                     l = filter_args(self.types, args, kwargs)
-                    if self.apply_in:
-                        return self.decorator(applyf)(*l)
-                    return self.decorator(*l)
+                    return self.decorator(applyf)(*l) if self.apply_in else self.decorator(*l)
 
                 def applyf(*fargs, **fkwargs):
                     try:
-                        if self.overwrite:
-                            return func(*fargs, **fkwargs)
-                        else:
-                            return func(*args, **kwargs)
+                        return func(*fargs, **fkwargs) if self.overwrite else func(*args, **kwargs)
                     except TypeError as e:
                         logging.getLogger(__name__).error(func)
                         raise e
@@ -161,7 +156,7 @@ class apply_to_type:
         return wrap
 
     def __repr__(self):
-        return '<function ' + repr(self.decorator) + ' wrapped with apply_to_type>'
+        return f'<function {repr(self.decorator)} wrapped with apply_to_type>'
 
 
 def implicit(arg):
@@ -213,7 +208,7 @@ class singlecache:
         self.func = func
 
     def __call__(self, *args):
-        if not hasattr(self, '_args') or not args == self._args:
+        if not hasattr(self, '_args') or args != self._args:
             self._args = args
             self._cache = self.func(*args)
         return self._cache

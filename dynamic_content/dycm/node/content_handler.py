@@ -166,7 +166,7 @@ class FieldBasedPageContent(object):
             logging.getLogger(__name__).warning(e)
             success = False
 
-        return ':redirect:/node/{}{}'.format(page.oid, '' if success else '/add')
+        return f":redirect:/node/{page.oid}{'' if success else '/add'}"
 
     def do_edit(self, page, query):
         for one_field in self.fields:
@@ -182,36 +182,34 @@ class FieldBasedPageContent(object):
 
     @wysiwyg.use()
     def add(self, dc_obj):
-        if not dc_obj.request.client.check_permission(self.join_permission('add')):
-            return None
-
-        node = dict(
-            editorial='',
-            content=self.add_form(),
-            title='New {} Page'.format(self.content_type)
+        return (
+            dict(
+                editorial='',
+                content=self.add_form(),
+                title=f'New {self.content_type} Page',
             )
-
-        return node
+            if dc_obj.request.client.check_permission(self.join_permission('add'))
+            else None
+        )
 
     def add_form(self):
         content = self.title_options() + tuple(self.field_add())
         return html.FormElement(
-            *content + (self.admin_options(), ),
-            action='/node/add/' + self.content_type,
-            classes={'edit', self.content_type, 'edit-form'}
-            )
+            *content + (self.admin_options(),),
+            action=f'/node/add/{self.content_type}',
+            classes={'edit', self.content_type, 'edit-form'},
+        )
 
     def edit_form(self, page):
         content = self.title_options(page) + tuple(self.field_edit(page))
         return html.FormElement(
-            *content + (self.admin_options(page), ),
-            action='/node/' + str(page.oid) + '/edit',
-            classes={'edit', self.content_type, 'edit-form'}
-            )
+            *content + (self.admin_options(page),),
+            action=f'/node/{str(page.oid)}/edit',
+            classes={'edit', self.content_type, 'edit-form'},
+        )
 
     def editorial(self, page, client):
-        l = self.editorial_list(page, client)
-        if l:
+        if l := self.editorial_list(page, client):
             return html.List(
                 *[
                     html.A(
@@ -270,13 +268,13 @@ class FieldBasedPageContent(object):
                 content=query.get(field.name, [None])[0]
             )
 
-        return ':redirect:/node/{}'.format(page.oid)
+        return f':redirect:/node/{page.oid}'
 
     @staticmethod
     def admin_options(page=None):
         if page is not None and page.menu_item is not None:
             parent = '-1' if page.menu_item is None else page.menu_item
-            selected = '{}-{}'.format(page.menu_item.menu.machine_name, parent)
+            selected = f'{page.menu_item.menu.machine_name}-{parent}'
             m_c = _menus.menu_chooser('parent-menu', selected=selected)
         else:
             m_c = _menus.menu_chooser('parent-menu')
@@ -376,16 +374,14 @@ class CMSController(object):
             int(get['from'][0]) if 'from' in get else 0,
             int(get['to'][0]) if 'to' in get else _step
         )
-        for a in (_model.Page
+        for a in _model.Page
             .select()
-            .limit('{},{}'.format(my_range[0], my_range[1] - my_range[0] + 1))
-            .order_by('date_created desc')
-            ):
+            .limit(f'{my_range[0]},{my_range[1] - my_range[0] + 1}').order_by('date_created desc'):
             handler = self.compiler_map[a.content_type.machine_name]
             node = handler.access(dc_obj, a)
             if not node:
                 continue
-            node['title'] = html.A(node['title'], href='/node/{}'.format(a.oid))
+            node['title'] = html.A(node['title'], href=f'/node/{a.oid}')
             yield node
 
     @route.controller_method(

@@ -11,7 +11,7 @@ ACCESS_DEFAULT_GRANTED = 0
 def check_permission(access_type, client, name):
     if access_type == ACCESS_DEFAULT_GRANTED:
         return True
-    return client.check_permission('access common ' + name)
+    return client.check_permission(f'access common {name}')
 
 
 class Handler(object):
@@ -30,11 +30,10 @@ class Handler(object):
             return None
 
         title = html.ContainerElement(self.title(conf), html_type='h3') if show_title else ''
-        obj = page.Component(
+        return page.Component(
             html.ContainerElement(
                 title,
                 self.get_content(conf, render_args, client),
-                classes={conf.machine_name.replace('_', '-'), 'common'}
+                classes={conf.machine_name.replace('_', '-'), 'common'},
             )
         )
-        return obj

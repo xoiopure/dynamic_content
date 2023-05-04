@@ -54,17 +54,14 @@ def _to_set(my_input, allowed_vals=str):
     if isinstance(my_input, (list, tuple)):
         for i in my_input:
             if not isinstance(i, allowed_vals):
-                raise TypeError(
-                    'Expected type {} got {}'.format(
-                        allowed_vals, type(my_input))
-                        )
+                raise TypeError(f'Expected type {allowed_vals} got {type(my_input)}')
         return frozenset(my_input)
     elif isinstance(my_input, allowed_vals):
         return frozenset({my_input})
     else:
-        raise TypeError('Expected type {} or {} got {}'.format(
-            (list, tuple, set, frozenset), allowed_vals, type(my_input)
-            ))
+        raise TypeError(
+            f'Expected type {(list, tuple, set, frozenset)} or {allowed_vals} got {type(my_input)}'
+        )
 
 
 class ControlFunction:
@@ -99,9 +96,7 @@ class ControlFunction:
         return self.function(*args, **kwargs)
 
     def __repr__(self):
-        return '<ControlFunction for path(s) \'{}\' with {}>'.format(
-            self.value, self.function
-            )
+        return f"<ControlFunction for path(s) \'{self.value}\' with {self.function}>"
 
 
 class RestControlFunction(ControlFunction):
@@ -168,11 +163,11 @@ controller_function = functools.partial(_controller_function, ControlFunction)
 
 
 def controller_class(class_):
-    c_funcs = tuple(filter(
-        lambda a: isinstance(a, ControlFunction),
-        class_.__dict__.values()
-        ))
-    if c_funcs:
+    if c_funcs := tuple(
+        filter(
+            lambda a: isinstance(a, ControlFunction), class_.__dict__.values()
+        )
+    ):
         instance = class_()
         get_cm()._controller_classes.append(instance)
         for item in c_funcs:
@@ -199,11 +194,9 @@ class RouteLink(linker.SimpleLink):
 def class_registerer(module, cc):
     # HACK during transition this is necessary
     cc = cc.get()
-    c_funcs = tuple(filter(
-        lambda a: isinstance(a, ControlFunction),
-        cc.__dict__.values()
-        ))
-    if c_funcs:
+    if c_funcs := tuple(
+        filter(lambda a: isinstance(a, ControlFunction), cc.__dict__.values())
+    ):
         instance = cc()
         get_cm()._controller_classes.append(instance)
         for item in c_funcs:

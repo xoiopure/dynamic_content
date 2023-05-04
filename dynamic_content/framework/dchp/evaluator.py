@@ -57,8 +57,7 @@ def find_code(dom_elements):
         if isinstance(element, parser.DcHPElement):
             yield element
         elif isinstance(element, elements.Base):
-            for a in find_code(element.content()):
-                yield a
+            yield from find_code(element.content())
 
 
 def evaluate_dom(dom_root, context):

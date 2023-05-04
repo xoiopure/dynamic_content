@@ -23,11 +23,12 @@ def compile_nodes(res, dc_obj):
             r = config.read_config(basepath / 'config')[_type]
             r = str(basepath / r)
 
-        r = r if r.endswith('.html') else r + '.html'
+        r = r if r.endswith('.html') else f'{r}.html'
         path = str(pathlib.Path(r))
 
         with open(path) as template:
             return template.read()
+
 
 
     if isinstance(res, dict):

@@ -32,14 +32,15 @@ class AuthorizationMiddleware(middleware.Handler):
             return
         if SESSION_TOKEN_IDENTIFIER in cookies and cookies[SESSION_TOKEN_IDENTIFIER].value != session.SESSION_INVALIDATED:
             for k,v in cookies.items():
-                logging.getLogger(__name__).debug('key: {}    value: {}'.format(k, v))
+                logging.getLogger(__name__).debug(f'key: {k}    value: {v}')
             db_result = session.validate_session(cookies[SESSION_TOKEN_IDENTIFIER].value)
             if db_result is not None:
                 request.client = client.Information(db_result)
                 return None
             new_cookie = http.cookies.SimpleCookie({SESSION_TOKEN_IDENTIFIER:session.SESSION_INVALIDATED})
             new_cookie[SESSION_TOKEN_IDENTIFIER]['expires'] = time.strftime("%a, %d-%b-%Y %Z %z", time.gmtime())
-            return response.Redirect('/login?destination={}'.format(request.path)
-                , code=303,  cookies=new_cookie)
+            return response.Redirect(
+                f'/login?destination={request.path}', code=303, cookies=new_cookie
+            )
 
         request.client = client.Information(users.GUEST)

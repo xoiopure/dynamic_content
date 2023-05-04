@@ -38,9 +38,9 @@ def _to_html_head(item):
         # the __iter__ method but only iterates keys
         # and we want keys + values
         return ' '.join(
-            '{}="{}"'.format(
-                _to_html_head(k), _to_html_head(v))
-            for k, v in item.items() if v
+            f'{_to_html_head(k)}="{_to_html_head(v)}"'
+            for k, v in item.items()
+            if v
         )
     elif hasattr(item, '__iter__'):
         # handling arbitrary iterable types

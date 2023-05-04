@@ -16,11 +16,7 @@ def proxy_db(settings):
     """
     if settings['database']['type'].lower() == 'mysql':
         mysqld = MySQLDatabase(
-            **{
-                a: b
-                for a, b in settings['database'].keys()
-                if not a == 'type'
-            }
+            **{a: b for a, b in settings['database'].keys() if a != 'type'}
         )
         mysqld.connect()
         return mysqld

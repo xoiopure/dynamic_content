@@ -23,30 +23,27 @@ def overview(dc_obj):
         model.Category.select(), Category.from_db(model.Subcategory.select())
         )
 
-    new_node = dict(
-        title='Website Administration',
-        content=render_categories(*tree)
+    return dict(
+        title='Website Administration', content=render_categories(*tree)
     )
-    return new_node
 
 
 def render_categories(*subcategories, basepath=ADMIN_PATH, classes=set()):
     subcategories = tuple(a.render(basepath) for a in subcategories)
     if len(subcategories) == 1:
         return html.ContainerElement(*subcategories, classes=classes)
-    else:
-        half = len(subcategories) // 2
-        return html.ContainerElement(
-            html.ContainerElement(
-                *subcategories[:half],
-                classes={'left-column'}
-                ),
-            html.ContainerElement(
-                *subcategories[half:],
-                classes={'right-column'}
-                ),
-            classes=classes
-        )
+    half = len(subcategories) // 2
+    return html.ContainerElement(
+        html.ContainerElement(
+            *subcategories[:half],
+            classes={'left-column'}
+            ),
+        html.ContainerElement(
+            *subcategories[half:],
+            classes={'right-column'}
+            ),
+        classes=classes
+    )
 
 
 def order_tree(parents, children):
@@ -101,12 +98,12 @@ def category(dc_obj, name):
 
     tree = order_tree([parent], children)
 
-    new_node = dict(
-        title=parent.display_name if parent.display_name else parent.machine_name,
-        content=render_categories(*tree)
-        )
-
-    return new_node
+    return dict(
+        title=parent.display_name
+        if parent.display_name
+        else parent.machine_name,
+        content=render_categories(*tree),
+    )
 
 
 @route.controller_function(
@@ -130,19 +127,14 @@ def subcategory(dc_obj, category_name,  name):
 
     tree = order_tree([parent], children)
 
-    new_node = dict(
-        title= (
-            parent.display_name
-            if parent.display_name
-            else parent.machine_name
-            ),
+    return dict(
+        title=(
+            parent.display_name if parent.display_name else parent.machine_name
+        ),
         content=render_categories(
-            *tree,
-            basepath='{}/{}'.format(ADMIN_PATH, category_name)
-            )
-        )
-
-    return new_node
+            *tree, basepath=f'{ADMIN_PATH}/{category_name}'
+        ),
+    )
 
 
 @route.controller_function(
@@ -172,13 +164,8 @@ class Category:
             parent = None
         else:
             raise TypeError(
-                'Expected type {}, {}, {} got {}'.format(
-                    type(model.Category),
-                    type(model.Subcategory),
-                    type(model.AdminPage),
-                    type(dbobj)
-                    )
-                )
+                f'Expected type {type(model.Category)}, {type(model.Subcategory)}, {type(model.AdminPage)} got {type(dbobj)}'
+            )
 
         return cls(dbobj.machine_name, dbobj.display_name, parent, None)
 
@@ -189,7 +176,7 @@ class Category:
         self.parent = parent
 
     def render(self, url_base):
-        path = url_base + '/' + self.name
+        path = f'{url_base}/{self.name}'
         title = html.ContainerElement(
             self.display_name,
             html_type='a',
@@ -198,11 +185,10 @@ class Category:
         )
         if not self.sub:
             return title
-        else:
-            l = (a.render(path) for a in self.sub)
-            return html.ContainerElement(
-                title,
-                html.List(
-                    *l
-                )
+        l = (a.render(path) for a in self.sub)
+        return html.ContainerElement(
+            title,
+            html.List(
+                *l
             )
+        )

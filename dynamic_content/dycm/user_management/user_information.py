@@ -69,9 +69,12 @@ def user_information(dc_obj, uid):
             ('UID', str(user.oid)),
             ('Username', user.username),
             ('Email-Address', user.email_address),
-            ('Full name', ' '.join((user.first_name, user.middle_name, user.last_name))),
+            (
+                'Full name',
+                ' '.join((user.first_name, user.middle_name, user.last_name)),
+            ),
             ('Account created', user.date_created),
-            ('Access Group', str(grp.oid) + ' (' + grp.machine_name + ')')
+            ('Access Group', f'{str(grp.oid)} ({grp.machine_name})'),
         )
     )
     return 'user_overview'
@@ -82,29 +85,16 @@ def user_information(dc_obj, uid):
 @theming.theme(default_theme='admin_theme')
 def users_overview(dc_obj, get_query):
 
-    if 'selection' in get_query:
-        selection = get_query['selection'][0]
-    else:
-        selection = '0,50'
-
+    selection = get_query['selection'][0] if 'selection' in get_query else '0,50'
     def all_users():
         for user in users.get_info(selection):
             href = '/users/{}'.format(user.oid)
             yield (
-                html.A(
-                    str(user.oid),
-                    href=href
-                ),
-                html.A(
-                    user.username,
-                    href=href
-                ),
+                html.A(str(user.oid), href=href),
+                html.A(user.username, href=href),
                 ' '.join((user.first_name, user.middle_name, user.last_name)),
                 user.date_created,
-                html.A(
-                    'edit',
-                    href='/users/' + str(user.oid) + '/edit'
-                )
+                html.A('edit', href=f'/users/{str(user.oid)}/edit'),
             )
 
     user_list = tuple(all_users())

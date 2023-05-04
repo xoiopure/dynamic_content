@@ -18,7 +18,7 @@ class RemoveTrailingSlash(middleware.Handler):
         :param request:
         :return: Response or None
         """
-        if request.path.endswith('/') and not request.path == '/':
+        if request.path.endswith('/') and request.path != '/':
             return response.Redirect(
                 location=request.path[:-1],
                 code=response.HttpResponseCodes.MovedPermanently

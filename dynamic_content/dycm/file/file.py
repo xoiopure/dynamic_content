@@ -36,10 +36,11 @@ def handle(settings, request):
         basedirs = (basedirs,)
     filepath = '/'.join(path_split[1:])
     basedirs = tuple(
-        (settings['dc_basedir'] + '/' + bd if not bd.startswith('/') else bd)
-        for bd in basedirs)
+        bd if bd.startswith('/') else settings['dc_basedir'] + '/' + bd
+        for bd in basedirs
+    )
     for resp in (serve_from(request, filepath, basedir) for basedir in basedirs):
-        if not resp is None:
+        if resp is not None:
             return resp
 
     return response.Response(code=response.HttpResponseCodes.NotFound)
@@ -63,20 +64,25 @@ def serve_from(settings, request, file, basedir):
 
     if basedir not in filepath.parents and basedir != filepath:
         return response.Response(code=response.HttpResponseCodes.Forbidden)
-    if filepath.is_dir():
-        if not settings.get('allow_indexing', False):
-            return response.Response(code=response.HttpResponseCodes.Forbidden)
-        elif not trailing_slash:
-            return response.Redirect(location='{}/'.format(request.path))
-        else:
-            return directory(request, filepath)
-    else:
-        if trailing_slash:
-            return response.Redirect(location=request.path[:-1])
-        return response.Response(
-            body=filepath.open('rb').read(),
-            headers={'Content-Type': '{};charset={}'.format(*mimetypes.guess_type(str(filepath.name)))}
+    if not filepath.is_dir():
+        return (
+            response.Redirect(location=request.path[:-1])
+            if trailing_slash
+            else response.Response(
+                body=filepath.open('rb').read(),
+                headers={
+                    'Content-Type': '{};charset={}'.format(
+                        *mimetypes.guess_type(str(filepath.name))
+                    )
+                },
             )
+        )
+    if not settings.get('allow_indexing', False):
+        return response.Response(code=response.HttpResponseCodes.Forbidden)
+    elif not trailing_slash:
+        return response.Redirect(location=f'{request.path}/')
+    else:
+        return directory(request, filepath)
 
 
 class PathHandler(middleware.Handler):

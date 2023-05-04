@@ -55,20 +55,20 @@ class ComponentError(DCException):
 class ComponentNotLoaded(ControllerError):
     """Trying to access a non existent component"""
     def __init__(self, name):
-        super().__init__('Component ' + name + ' is not loaded.')
+        super().__init__(f'Component {name} is not loaded.')
 
 
 class ComponentLoaded(ControllerError):
     """Assigning to a non-assignable component"""
     def __init__(self, name):
-        super().__init__('Component ' + name + ' is already loaded.')
+        super().__init__(f'Component {name} is already loaded.')
 
 
 class HookExists(DCException):
     """A previously initialized hook is being initialized again"""
 
     def __init__(self, hook):
-        super().__init__('{} already exists'.format(hook))
+        super().__init__(f'{hook} already exists')
 
 
 class HookNotInitialized(DCException):
@@ -76,7 +76,7 @@ class HookNotInitialized(DCException):
     A hook that has not been initialized is being assigned to
     """
     def __init__(self, hook):
-        super().__init__('{} hooks are not initalized'.format(hook))
+        super().__init__(f'{hook} hooks are not initalized')
 
 
 class LackingPermission(DCException):
@@ -85,8 +85,7 @@ class LackingPermission(DCException):
     """
     def __init__(self, client, permission, action=''):
         super().__init__(
-            'User "{}" does not have permission "{}"'
-            ' required for this action {}'.format(client, permission, action)
+            f'User "{client}" does not have permission "{permission}" required for this action {action}'
         )
         self.client = client
         self.permission = permission
@@ -101,11 +100,11 @@ class LinkerException(DCException):
 class LinkingException(LinkerException):
     """Base exception for errors while linking"""
     def __init__(self, link, nested_exception=None, message=None):
-        s = ['{} in link {}'.format(self.__class__.__name__, link)]
+        s = [f'{self.__class__.__name__} in link {link}']
         if isinstance(nested_exception, Exception):
-            s.append('with nested exception: {}'.format(nested_exception))
+            s.append(f'with nested exception: {nested_exception}')
         if message is not None:
-            s.append('with message {}'.format(message))
+            s.append(f'with message {message}')
         super().__init__(
             ' '.join(s)
         )
@@ -124,10 +123,10 @@ class UnlinkingFailed(LinkingException):
 class IsLinked(LinkerException):
     """Trying to link a already linked link"""
     def __init__(self, link):
-        super().__init__('{} has been linked already'.format(link))
+        super().__init__(f'{link} has been linked already')
 
 
 class IsNotLinked(LinkerException):
     """trying to unlink an unliked link"""
     def __init__(self, link):
-        super().__init__('{} is not linked'.format(link))
+        super().__init__(f'{link} is not linked')

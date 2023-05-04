@@ -20,10 +20,9 @@ def _menu_chooser_iterator():
     for single_menu in model.Menu.select():
 
         yield tuple(
-            (single_menu.machine_name + '-' + a[0], a[1])
+            (f'{single_menu.machine_name}-{a[0]}', a[1])
             for a in menu(
-                name=single_menu.machine_name,
-                item_class=MenuChooseItem
+                name=single_menu.machine_name, item_class=MenuChooseItem
             ).render()
         )
 
@@ -75,12 +74,15 @@ class MenuItem:
             return '-' * depth + '  ' + self.display_name
 
     def render_children(self, depth=0, max_depth=-1):
-        if not self.children:
-            return ()
-        else:
-            return tuple(itertools.chain(
-                *tuple(a.render(depth, max_depth) for a in self.children))
+        return (
+            tuple(
+                itertools.chain(
+                    *tuple(a.render(depth, max_depth) for a in self.children)
                 )
+            )
+            if self.children
+            else ()
+        )
 
     def __str__(self):
         return ''.join(str(a) for a in self.render(0))
@@ -106,25 +108,27 @@ class HTMLMenuItem(MenuItem):
             return html.ContainerElement(
                 self.display_name,
                 html_type='a',
-                classes={'layer-' + str(depth), 'menu'},
-                additional={'href': self.item_path}
-                )
+                classes={f'layer-{str(depth)}', 'menu'},
+                additional={'href': self.item_path},
+            )
         else:
             return html.ContainerElement(
                 self.display_name,
                 html_type='span',
-                classes={'layer-' + str(depth), 'menu'}
-                )
+                classes={f'layer-{str(depth)}', 'menu'},
+            )
 
     def render_children(self, depth=0, max_depth=-1):
-        if not self.children:
-            return ''
-        return html.List(
-            *tuple(a.render(depth, max_depth) for a in self.children),
-            list_type='ul',
-            item_classes={'layer-' + str(depth)},
-            classes={'layer-' + str(depth), 'menu'}
+        return (
+            html.List(
+                *tuple(a.render(depth, max_depth) for a in self.children),
+                list_type='ul',
+                item_classes={f'layer-{str(depth)}'},
+                classes={f'layer-{str(depth)}', 'menu'},
             )
+            if self.children
+            else ''
+        )
 
     def render(self, depth=0, max_depth=-1):
         if 0 <= max_depth <= depth:

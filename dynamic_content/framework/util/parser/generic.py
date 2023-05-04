@@ -32,27 +32,23 @@ class Vertex(object):
 
     def add_edge(self, edge):
         for arg in edge.chars:
-            if isinstance(arg, str):
-                if arg in self.inner:
-                    raise SyntaxError('Edge to {} already exists'.format(arg))
-                self.inner[arg] = edge
-            else:
-                raise TypeError('Expected type {} or {}, got {}'.format(
-                    str, callable, type(arg)))
+            if not isinstance(arg, str):
+                raise TypeError(f'Expected type {str} or {callable}, got {type(arg)}')
+            if arg in self.inner:
+                raise SyntaxError(f'Edge to {arg} already exists')
+            self.inner[arg] = edge
         for f in edge.funcs:
             if callable(f):
                 self.f.add(EdgeFunc(func=f, result=edge))
             else:
-                raise TypeError('Expected type {}, got {}'.format(
-                    callable, type(f)))
+                raise TypeError(f'Expected type {callable}, got {type(f)}')
 
     def match(self, character):
         if character in self.inner:
             return self.inner[character]
-        else:
-            for f in self.f:
-                if f.func(character):
-                    return f.result
+        for f in self.f:
+            if f.func(character):
+                return f.result
 
 
 def _parse_deterministic(automaton, stack, string):
@@ -66,20 +62,20 @@ def _parse_deterministic(automaton, stack, string):
         try:
             res = node.match(n)
             if res is None:
-                raise SyntaxError('No Node found matching \nstack = \n{} \nand n = {}'.format(stack, n))
+                raise SyntaxError(f'No Node found matching \nstack = \n{stack} \nand n = {n}')
             fres = res.g(n, stack) if res.g is not None else None
         except (KeyError, SyntaxError) as e:
-            raise SyntaxError('On line {} column {}, nested exception {}'.format(
-                linecount, charcount, e
-            ))
+            raise SyntaxError(
+                f'On line {linecount} column {charcount}, nested exception {e}'
+            )
         if res is None:
-            raise SyntaxError('On line {} column: {} \nExpected character'
-                'from {} or conforming to {}'.format(linecount,
-                charcount, node.inner.keys(), set(f.func for f in node.f)))
+            raise SyntaxError(
+                f'On line {linecount} column: {charcount} \nExpected characterfrom {node.inner.keys()} or conforming to {{f.func for f in node.f}}'
+            )
         try:
             node = automaton[res.head if fres is None else fres]
         except KeyError:
-            raise SyntaxError('No state {} found in Automaton'.format(res.head))
+            raise SyntaxError(f'No state {res.head} found in Automaton')
 
         if n == '\n':
             linecount += 1

@@ -52,9 +52,5 @@ class TestMenus(unittest.TestCase):
 
         self.assertEqual(
             rendered,
-            '<ul class="menu">'
-                '<li class="layer-0">'
-                    '<a href="{}">{}</a>'
-                '</li>'
-            '</ul>'.format(self.menu_1_item_1[1], self.menu_1_item_1[0])
+            f'<ul class="menu"><li class="layer-0"><a href="{self.menu_1_item_1[1]}">{self.menu_1_item_1[0]}</a></li></ul>',
         )

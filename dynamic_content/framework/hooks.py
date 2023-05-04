@@ -220,8 +220,7 @@ class HookList(list):
     def append(self, p_object):
         if not isinstance(p_object, self.expected_class):
             raise TypeError(
-                'Expected instance of {} for hook handler for hook {}, '
-                'got {}'.format(self.expected_class, self.name, type(p_object))
+                f'Expected instance of {self.expected_class} for hook handler for hook {self.name}, got {type(p_object)}'
             )
         super().append(p_object)
         self._sort()
@@ -279,8 +278,7 @@ class HookManager:
         """
         if hook not in self._hooks:
             logging.getLogger(__name__).warning(
-                'Assigning to uninitialized hook {}, '
-                'assuming type {}'.format(hook, type(handler))
+                f'Assigning to uninitialized hook {hook}, assuming type {type(handler)}'
             )
             self.init_hook(hook, type(handler))
         container = self._hooks[hook]
@@ -343,10 +341,14 @@ class HookManager:
         :param kwargs: kwargs to call hook with
         :return: hook(*arsg, **kwargs) if not None
         """
-        for res in self.yield_call_hooks(hook, *args, **kwargs):
-            if not res is None:
-                return res
-        return None
+        return next(
+            (
+                res
+                for res in self.yield_call_hooks(hook, *args, **kwargs)
+                if res is not None
+            ),
+            None,
+        )
 
     def return_call_hooks_with(self, hook, executable, *args, **kwargs):
         """
@@ -358,10 +360,16 @@ class HookManager:
         :param kwargs: kwargs to call with
         :return: return executable(hook, *args, **kwargs) if not None
         """
-        for res in self.yield_call_hooks_with(hook, executable, *args, **kwargs):
-            if res is not None:
-                return res
-        return None
+        return next(
+            (
+                res
+                for res in self.yield_call_hooks_with(
+                    hook, executable, *args, **kwargs
+                )
+                if res is not None
+            ),
+            None,
+        )
 
     def yield_call_hooks(self, hook, *args,**kwargs):
         """
@@ -374,7 +382,7 @@ class HookManager:
         """
         for h in self.get_hooks(hook):
             res = h(*args, **kwargs)
-            if not res is None: yield res
+            if res is not None: yield res
 
     def yield_call_hooks_with(self, hook, executable, *args, **kwargs):
         """
@@ -393,7 +401,7 @@ class HookManager:
         assert callable(executable)
         for h in self.get_hooks(hook):
             res = executable(h, *args, **kwargs)
-            if not res is None: yield res
+            if res is not None: yield res
 
 
 def register(*args, **kwargs):

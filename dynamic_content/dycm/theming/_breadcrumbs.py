@@ -19,25 +19,20 @@ def get_breadcrumbs(url):
 def render_breadcrumbs(url):
     def acc():
         for (name, location) in get_breadcrumbs(url):
-            for i in (
+            yield from (
                 html.ContainerElement(
                     breadcrumb_separator,
                     html_type='span',
-                    classes={'breadcrumb-separator'}
+                    classes={'breadcrumb-separator'},
                 ),
-                html.A(
-                    name,
-                    href=location,
-                    classes={'breadcrumb'}
-                )
-            ):
-                yield i
+                html.A(name, href=location, classes={'breadcrumb'}),
+            )
 
     return html.ContainerElement(*tuple(acc()), classes={'breadcrumbs'})
 
 
 def attach_breadcrumbs(dc_obj):
-    if not 'breadcrumbs' in dc_obj:
+    if 'breadcrumbs' not in dc_obj:
         dc_obj.context['breadcrumbs'] = render_breadcrumbs(dc_obj.request.path)
 
 

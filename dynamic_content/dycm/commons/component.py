@@ -13,7 +13,7 @@ class Mapper(dict):
 
     def register(self, name, val):
         if not isinstance(name, str):
-            raise TypeError('expected type <str>, got ' + repr(type(name)))
+            raise TypeError(f'expected type <str>, got {repr(type(name))}')
         if name in self:
             logging.getLogger(__name__).warning(
                 'in CommonsMap, register: Overwriting commons handler ', name

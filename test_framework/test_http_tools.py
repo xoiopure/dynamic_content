@@ -88,12 +88,12 @@ class TestHeaderComparison(unittest.TestCase):
             h1 = headers.Header(k, v)
 
             self.assertEqual(h1, headers.Header.from_tuple((k,v)))
-            self.assertEqual(h1, headers.Header.from_str(k + ': ' + v))
+            self.assertEqual(h1, headers.Header.from_str(f'{k}: {v}'))
             self.assertIn(h1, headers.Header.many_from_dict({k:v}))
 
-            self.assertTrue(h1 == k + ': ' + v)
+            self.assertTrue(h1 == f'{k}: {v}')
             self.assertTrue(h1 == (k, v))
-            self.assertFalse(h1 == o + ': ' + ov)
+            self.assertFalse(h1 == f'{o}: {ov}')
             self.assertFalse(h1 == (o, ov))
 
 

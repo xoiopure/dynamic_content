@@ -90,17 +90,16 @@ class AppThread(threading.Thread):
 
             if 'no_context' not in handler.options or handler.options['no_context'] is True:
                 view = handler(*(dc_obj, ) + args, **kwargs)
-            elif 'no_context' in handler.options and handler.options['no_context'] is False:
+            elif handler.options['no_context'] is False:
                 view = handler(*args, **kwargs)
             else:
                 raise TypeError(
-                    'Expected type {} for "no_context" option in handler'
-                    ', got {}'.format(bool, type(handler.options['no_context']))
+                    f"""Expected type {bool} for "no_context" option in handler, got {type(handler.options['no_context'])}"""
                 )
 
         except (exceptions.PathResolving,
                 exceptions.MethodHandlerNotFound) as e:
-            logging.getLogger(__name__).error('Page not found with exception {}'.format(e))
+            logging.getLogger(__name__).error(f'Page not found with exception {e}')
             view = 'error'
 
             dc_obj = structures.DynamicContent(
@@ -113,13 +112,9 @@ class AppThread(threading.Thread):
             )
 
             dc_obj.context['title'] = '404 - Page not found'
-            dc_obj.context['content'] = (
-                '<h3>Pathmapper encountered an error</h3>'
-                '<p>Nested Exception:</p>'
-                '<code> {} </code>'
-                '<p>Stacktrace:</p>'
-                '<code> {} </code>'
-                ).format(e, traceback.format_exc())
+            dc_obj.context[
+                'content'
+            ] = f'<h3>Pathmapper encountered an error</h3><p>Nested Exception:</p><code> {e} </code><p>Stacktrace:</p><code> {traceback.format_exc()} </code>'
 
         # Allow view to directly return a response, mainly to handle errors
         if not isinstance(view, http.response.Response):
@@ -163,9 +158,8 @@ class WGSI(AppThread):
         response = self.process_request(request)
 
         start_response(
-            '{} {}'.format(response.code,
-                server.BaseHTTPRequestHandler.responses[response.code][0]),
-            list(response.headers.to_tuple())
+            f'{response.code} {server.BaseHTTPRequestHandler.responses[response.code][0]}',
+            list(response.headers.to_tuple()),
         )
         return [response.body if response.body else ''.encode('utf-8')]
 

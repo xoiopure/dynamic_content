@@ -50,7 +50,7 @@ class Base(object):
         self.tag = tag
         self._children = list(children)
         self._params = set()
-        self._value_params = dict()
+        self._value_params = {}
         for k, v in params:
             if isinstance(v, bool):
                 self._params.add(k)
@@ -66,10 +66,7 @@ class Base(object):
         return self._params
 
     def __getattr__(self, k):
-        if k in self._value_params:
-            return self._value_params[k]
-        else:
-            return k in self._params
+        return self._value_params[k] if k in self._value_params else k in self._params
 
     def __setattr__(self, k, v):
         if k in self.__slots__:
@@ -94,17 +91,22 @@ class Base(object):
     def render(self):
 
         inner_head = ' '.join(
-            (self.render_tag(), ) + tuple(self._params)
-            + tuple(k + '="' + unwrap_list(v) + '"' for k,v in self._value_params.items() if v is not None)
+            (self.render_tag(),)
+            + tuple(self._params)
+            + tuple(
+                f'{k}="{unwrap_list(v)}"'
+                for k, v in self._value_params.items()
+                if v is not None
             )
+        )
         if self._children:
             return ''.join(('<', inner_head, '>',
                 ''.join(a if isinstance(a, str) else a.render() for a in self._children),
                 '</', self.tag,'>'))
         elif self.tag in non_closing:
-            return '<' + inner_head + '>'
+            return f'<{inner_head}>'
         else:
-            return '<' + inner_head + ' />'
+            return f'<{inner_head} />'
 
     def __str__(self):
         return self.render()
@@ -129,12 +131,9 @@ class Base(object):
 
     def _satisfies(self, *selectors, **vselectors):
         for selector in selectors:
-            if not selector in self._params:
+            if selector not in self._params:
                 return False
-        for k, v in vselectors.items():
-            if self._value_params[k] != v:
-                return False
-        return True
+        return all(self._value_params[k] == v for k, v in vselectors.items())
 
 
     def _find(self, *selectors, **vselectors):
@@ -144,8 +143,7 @@ class Base(object):
         except KeyError:
             None
         for child in self.children():
-            for a in child._find(*selectors, **vselectors):
-                yield a
+            yield from child._find(*selectors, **vselectors)
 
     def find(self, *selectors, **vselectors):
         return tuple(self._find(*selectors, **vselectors))
@@ -153,7 +151,7 @@ class Base(object):
 
 class Doctype(Base):
     def render_tag(self):
-        return '!' + self.tag.upper()
+        return f'!{self.tag.upper()}'
 
 
 class HTML(Base):
@@ -173,7 +171,7 @@ class HTML(Base):
         if self.doctype:
             return self.doctype.render() + super().render()
         else:
-            return '<!DOCTYPE html>' + super().render()
+            return f'<!DOCTYPE html>{super().render()}'
 
 
 class _Hack(dict):

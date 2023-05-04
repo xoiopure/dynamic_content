@@ -78,30 +78,23 @@ def check_parallel_process():
 
     res = subprocess.check_output(('ps', '-ef'))
 
-    lines = tuple(
-        filter(
-            lambda a: ' ' + title + ' ' in a,
-            res.decode().splitlines()
-        )
-    )
-
-    if len(lines) != 0:
+    if lines := tuple(
+        filter(lambda a: f' {title} ' in a, res.decode().splitlines())
+    ):
         logging.getLogger(__name__).debug(lines)
         user_input = input(
-            '\n\nAnother {} process has been detected.\n'
-            'Would you like to kill it, in order to start a new one?\n'
-            '[y|N]'.format(title)
-            )
+            f'\n\nAnother {title} process has been detected.\nWould you like to kill it, in order to start a new one?\n[y|N]'
+        )
         if user_input.lower() in ('y', 'yes'):
             subprocess.call(('pkill', 'dynamic_content'))
         else:
             user_input = input(
                 'Would you like to exit this process instead? [Y|n]'
             )
-            if not user_input.lower() in ('n', 'no'):
+            if user_input.lower() not in ('n', 'no'):
                 quit(code=0)
 
-    if not setproctitle.getproctitle() == title:
+    if setproctitle.getproctitle() != title:
         setproctitle.setproctitle(title)
 
 

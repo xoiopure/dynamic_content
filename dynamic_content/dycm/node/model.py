@@ -28,13 +28,21 @@ class Page(orm.BaseModel):
 
 @functools.lru_cache()
 def field(name):
+
+
+
     class FieldData(orm.BaseModel):
+
+
+
         class Meta:
-            db_table = name + '_data'
+            db_table = f'{name}_data'
+
 
         page_type = orm.CharField()
         page_id = orm.IntegerField()
         content = orm.TextField()
+
 
     return FieldData
 

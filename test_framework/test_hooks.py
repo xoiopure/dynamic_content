@@ -9,6 +9,9 @@ import unittest
 class MyTestCase(unittest.TestCase):
     def setUp(self):
 
+
+
+
         @hooks.register(8)
         class TestHook1(hooks.ClassHook):
             hook_name = 'testhook1'
@@ -24,8 +27,9 @@ class MyTestCase(unittest.TestCase):
                 return self.arg, g
 
             def method2(self):
-                if not self.arg == 0:
+                if self.arg != 0:
                     return self.arg
+
 
         TestHook1.register_class()
 

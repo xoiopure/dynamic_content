@@ -13,7 +13,7 @@ __version__ = '0.2.1'
 def _name_transform(name):
     new_name = name.lower().replace('_', '').replace(' ', '')
     if not new_name.isalpha():
-        raise ValueError('Bad character in {}'.format(new_name))
+        raise ValueError(f'Bad character in {new_name}')
     return new_name
 
 
@@ -71,18 +71,15 @@ class ComponentContainer(dict):
         if isinstance(key, str):
             key = _name_transform(key)
         elif not isinstance(key, type):
-            raise TypeError(
-                'Expected Type {} or {}, got {}'.format(str, type, type(key))
-                )
+            raise TypeError(f'Expected Type {str} or {type}, got {type(key)}')
         item = super().setdefault(key, ComponentWrapper(key))
         item.set(value)
 
     def __getitem__(self, key):
         if isinstance(key, type):
             return self.setdefault(key, ComponentWrapper(key))
-        else:
-            new_key = _name_transform(key)
-            return super().setdefault(new_key, ComponentWrapper(new_key))
+        new_key = _name_transform(key)
+        return super().setdefault(new_key, ComponentWrapper(new_key))
 
     __call__ = __getitem__
 

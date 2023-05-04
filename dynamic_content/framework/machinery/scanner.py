@@ -52,36 +52,29 @@ def submodules_from_path(
                 for path in contents:
 
                     # return submodules recursively
-                    for submodule in submodules_from_path(path, me):
-                        yield submodule
+                    yield from submodules_from_path(path, me)
                 break
 
 
 def submodules_from_name(module, parents):
-        path = pathlib.Path(
-            # from the modules file
-            importlib.import_module(
-                (('.'.join(parents) + '.' + module)
-                 if parents
-                 else module)
-            ).__file__
+    path = pathlib.Path(
+        # from the modules file
+        importlib.import_module(
+            (('.'.join(parents) + '.' + module)
+             if parents
+             else module)
+        ).__file__
+    )
+    if path.name == '__init__.py':
+        path = path.parent
+
+    return tuple(
+        submodules_from_path(
+            # we construct paths first
+            path,
+            parents,
         )
-        if path.name == '__init__.py':
-            path = path.parent
-
-        return tuple(
-            submodule
-
-            # we iterate over modules and apps
-            # modules first
-
-            # we get all submodules
-            for submodule in submodules_from_path(
-                # we construct paths first
-                path,
-                parents
-            )
-        )
+    )
 
 
 class ScannerHook(hooks.ClassHook):
@@ -124,8 +117,7 @@ class __MultiHookBase(ScannerHook):
         for hook in self.get_internal_hooks(selector):
             res = hook(module, var)
             if inspect.isgenerator(res):
-                for i in res:
-                    yield i
+                yield from res
             else:
                 yield res
 
@@ -313,11 +305,9 @@ class MatchingSubtypeHook(__MultiHookBase):
         :param selector: the type of the object
         :returns: yielding hooks
         """
-        for hook in cls.internal_hooks[selector]:
-            yield hook
+        yield from cls.internal_hooks[selector]
         for class_ in selector.__bases__:
-            for hook in cls.internal_hooks[class_]:
-                yield hook
+            yield from cls.internal_hooks[class_]
 
     @classmethod
     def is_selector(cls, selector):
@@ -342,7 +332,7 @@ class Scanner:
         # the tracker will keep track of all scanned values
         # to avoid handling them twice
         self.hashable_tracker = set()
-        self.unhashable_tracker = list()
+        self.unhashable_tracker = []
 
     @component.inject_method(includes.SettingsDict)
     def scan_from_settings(self, settings):
@@ -359,7 +349,7 @@ class Scanner:
         framework = ('framework', importlib.import_module('framework'))
 
         modules_from_settings = tuple(
-            (module, importlib.import_module('dycm.{}'.format(module)))
+            (module, importlib.import_module(f'dycm.{module}'))
             for module in settings.get('modules', ())
         )
 
@@ -385,9 +375,7 @@ class Scanner:
             # so we can ensure all of them are present
             # at the start of the actual scan later
             for hook in self.find_scanner_hooks(module):
-                logging.getLogger(__name__).debug(
-                    'Found scanner hook {}'.format(hook)
-                )
+                logging.getLogger(__name__).debug(f'Found scanner hook {hook}')
                 if hook not in hook.get_hooks():
                     hook.register_instance()
                     logging.getLogger(__name__).debug(
@@ -401,12 +389,9 @@ class Scanner:
         for name, module in modules:
             # now we go through each module
             # calling the hooks we discovered earlier
-            self.linker.init_module(
-                name,
-                (link for link in self.find_any(name, module))
-            )
+            self.linker.init_module(name, iter(self.find_any(name, module)))
             logging.getLogger(__name__).debug(
-                'Links found for module {}: {}'.format(name, self.linker[name])
+                f'Links found for module {name}: {self.linker[name]}'
             )
 
     def find_any(self, module_name,  module):

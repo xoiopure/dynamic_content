@@ -18,13 +18,10 @@ class Common:
 # class RegionHandler:
 
 def get_all_commons(client, name, theme):
-    region_info = model.Common.select().where(
-                    model.Common.region == name,
-                    model.Common.theme == theming.model.Theme.get(
-                        machine_name=theme
-                        )
-                    )
-    if region_info:
+    if region_info := model.Common.select().where(
+        model.Common.region == name,
+        model.Common.theme == theming.model.Theme.get(machine_name=theme),
+    ):
         return [
             get_item(client, model.CommonsConfig.get(
                 model.CommonsConfig.machine_name == a.machine_name),
@@ -65,8 +62,7 @@ def compile_region(region_name, region_config, theme, client):
     meta = []
     scripts = []
     cont_acc = []
-    commons = get_all_commons(client, region_name, theme)
-    if commons:
+    if commons := get_all_commons(client, region_name, theme):
         for item in commons:
             content = item.content
             if content:

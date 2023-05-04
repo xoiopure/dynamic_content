@@ -20,7 +20,7 @@ def upload(dc_obj, file, name):
         target_dir.mkdir()
 
     if filepath.exists():
-        new = filepath.parent / (filepath.stem + '-1' + filepath.suffix)
+        new = filepath.parent / f'{filepath.stem}-1{filepath.suffix}'
 
     with open(str(filepath), mode='w') as fileobj:
         print(file, file=fileobj)

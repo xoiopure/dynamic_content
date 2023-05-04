@@ -59,16 +59,11 @@ def apply_to_context(
 
                 else:
                     res = inner_func(*args, **kwargs)
-                    if with_return:
-                        res_dec = func(context, res)
-                    else:
-                        res_dec = func(context)
-
-                if return_from_decorator:
-                    return res_dec
-                else:
-                    return res
+                    res_dec = func(context, res) if with_return else func(context)
+                return res_dec if return_from_decorator else res
 
             return inner_call
+
         return inner_wrapper
+
     return wrapper

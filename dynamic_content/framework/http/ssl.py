@@ -28,10 +28,6 @@ def conditional_redirect(settings, request):
         return None
     else:
         return response.Redirect(
-            location='https://{}{}'.format(
-                request.host,
-                (':' + str(settings['server']['ssl_port'])) if request.port else '',
-                request.path
-                ),
-            code=response.HttpResponseCodes.MovedPermanently
-            )
+            location=f"https://{request.host}{':' + str(settings['server']['ssl_port']) if request.port else ''}",
+            code=response.HttpResponseCodes.MovedPermanently,
+        )

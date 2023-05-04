@@ -39,12 +39,10 @@ class ParserStack(html.ParserStack):
             text_content=text_content,
             current=current
         )
-        self.dchp_content = dchp_content if not dchp_content is None else []
+        self.dchp_content = dchp_content if dchp_content is not None else []
         self.dchp_element_name = (
-            dchp_element_name
-            if not dchp_element_name is None
-            else []
-            )
+            dchp_element_name if dchp_element_name is not None else []
+        )
         self.dchp_indent = dchp_indent
         self.dchp_active_indent = dchp_active_indent
 
@@ -65,10 +63,7 @@ class DcHPElement(elements.Base):
         self.executed = None
 
     def render(self):
-        if self.executed is None:
-            return '<?' + self.tag + ' ?>'
-        else:
-            return str(self.executed)
+        return f'<?{self.tag} ?>' if self.executed is None else str(self.executed)
 
 
 html_base = html.automaton_base
@@ -77,7 +72,7 @@ html_base = html.automaton_base
 def q30(n, stack):
     name = ''.join(stack.dchp_element_name)
     if name != 'dchp':
-        raise SyntaxError('Expected tag "dchp", found "{}"'.format(name))
+        raise SyntaxError(f'Expected tag "dchp", found "{name}"')
     stack.dchp_element_name = []
     stack.dchp_indent = 0
 
@@ -109,8 +104,9 @@ def reduce_indent(n, stack):
         stack.dchp_content.append(n)
         return 42
     if n != ' ':
-        raise SyntaxError('Expected Indent of {}, found {}'.format(
-            stack.dchp_indent, stack.dchp_indent - stack.dchp_active_indent))
+        raise SyntaxError(
+            f'Expected Indent of {stack.dchp_indent}, found {stack.dchp_indent - stack.dchp_active_indent}'
+        )
     if stack.dchp_active_indent == 1:
         return 42
     stack.dchp_active_indent -= 1
@@ -122,10 +118,7 @@ def reset_active_indent(n, stack):
 
 
 def q47(n, stack):
-    if stack.dchp_active_indent <= 1:
-        return 44
-    else:
-        return 48
+    return 44 if stack.dchp_active_indent <= 1 else 48
 
 
 automaton_base = (
@@ -189,12 +182,10 @@ def parse(string):
     stack = generic.parse(automaton, stack, string)
     if stack.current is not cellar_bottom:
         raise SyntaxError()
-    else:
-        c = list(cellar_bottom.content())
-        if c[0].tag == 'doctype':
-            if not c[1].tag == 'html':
-                raise TypeError
-            c[1].doctype = c[0]
-            return c[1:]
-        else:
-            return c
+    c = list(cellar_bottom.content())
+    if c[0].tag != 'doctype':
+        return c
+    if c[1].tag != 'html':
+        raise TypeError
+    c[1].doctype = c[0]
+    return c[1:]

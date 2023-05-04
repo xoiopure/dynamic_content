@@ -37,17 +37,17 @@ del T
 
 @component.inject(SettingsDict)
 def translate(settings, source_string, language=get_settings().get('default_language',_default_language)):
-    if settings.get('i18n_support_enabled', False) and language != settings.get('base_language', _default_language):
-        db_result = getattr(_t, language).get(source_string=source_string)
-        return db_result.translation if db_result else source_string
-    else:
+    if not settings.get(
+        'i18n_support_enabled', False
+    ) or language == settings.get('base_language', _default_language):
         return source_string
+    db_result = getattr(_t, language).get(source_string=source_string)
+    return db_result.translation if db_result else source_string
 
 
 def edit_display_name(source_string, translation, language=get_settings().get('default_language', _default_language)):
     if language != get_settings().get('base_language', _default_language) and get_settings().get('i18n_support_enabled', False):
-        db_result = getattr(_t, language).get(source_string=source_string)
-        if db_result:
+        if db_result := getattr(_t, language).get(source_string=source_string):
             db_result.translation = translation
             db_result.save()
         else:

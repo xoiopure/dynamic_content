@@ -101,7 +101,7 @@ def register(options=(), args=(), kwargs=None):
     :return: wrapper function or class
     """
 
-    kwargs = kwargs if not kwargs is None else {}
+    kwargs = kwargs if kwargs is not None else {}
     def _inner(cls):
         if inspect.isclass(cls) and issubclass(cls, Handler):
             instance = cls(*args, **kwargs)
@@ -115,6 +115,7 @@ def register(options=(), args=(), kwargs=None):
                 )
         instance.register_instance()
         return cls
+
     if not args and not kwargs and (callable(options)
                                     or inspect.isclass(options)):
         return _inner(options)

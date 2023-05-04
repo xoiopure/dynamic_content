@@ -129,10 +129,7 @@ class RequestHandler(server.BaseHTTPRequestHandler):
                 logging.getLogger(__name__).error('Unexpected error {}'.format(exception))
                 self.send_error(500, *self.responses[500])
 
-        if _catch_errors:
-            return wrapped
-        else:
-            return function
+        return wrapped if _catch_errors else function
 
     def process_http_error(self, error, response=None):
         """
@@ -146,26 +143,21 @@ class RequestHandler(server.BaseHTTPRequestHandler):
         if error.code >= 400:
             if error.reason:
                 logging.getLogger(__name__).warning(
-                    'HTTPError, code: {}, message: {}'.format(
-                        error.code, error.reason
-                    )
+                    f'HTTPError, code: {error.code}, message: {error.reason}'
                 )
                 self.send_error(
                     error.code, self.responses[error.code][0], error.reason
                     )
             else:
                 logging.getLogger(__name__).warning(
-                    'HTTPError,  code: {}, message: {}'.format(
-                        error.code, self.responses[error.code][0]
-                        )
-                    )
+                    f'HTTPError,  code: {error.code}, message: {self.responses[error.code][0]}'
+                )
                 self.send_error(error.code, *self.responses[error.code])
             return 0
         else:
             self.send_response(error.code)
-            if response:
-                if response.headers:
-                    self.process_headers(response.headers)
+            if response and response.headers:
+                self.process_headers(response.headers)
             if error.headers:
                 self.process_headers(error.headers)
         self.end_headers()
@@ -190,10 +182,8 @@ class RequestHandler(server.BaseHTTPRequestHandler):
                 self.send_header(headers[0], headers[1])
         else:
             raise TypeError(
-                'Expected headers of type {} or {}, got {}'.format(
-                    dict, tuple, type(headers)
-                    )
-                )
+                f'Expected headers of type {dict} or {tuple}, got {type(headers)}'
+            )
 
     @component.inject_method('settings')
     def send_document(self, settings, response):

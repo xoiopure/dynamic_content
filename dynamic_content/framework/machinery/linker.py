@@ -127,9 +127,7 @@ class Linker:
         :param module:
         :return: None
         """
-        logging.getLogger(__name__).debug(
-            'Linking module {}'.format(module)
-        )
+        logging.getLogger(__name__).debug(f'Linking module {module}')
         for link in self[module]:
             link.link()
 
@@ -140,8 +138,6 @@ class Linker:
         :param module:
         :return: None
         """
-        logging.getLogger(__name__).debug(
-            'Unlinking module {}'.format(module)
-        )
+        logging.getLogger(__name__).debug(f'Unlinking module {module}')
         for link in self[module]:
             link.unlink()

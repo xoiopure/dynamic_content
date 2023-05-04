@@ -95,14 +95,12 @@ class Permission:
         elif self.check(group, strict=True):
             logging.getLogger(__name__).warning(
                 'in users, permissions, assign_permission:',
-                'access group {} already owns permission {}'.format(
-                    group, self.permission
-                )
+                f'access group {group} already owns permission {self.permission}',
             )
         elif not self.check(CONTROL_GROUP):
             logging.getLogger(__name__).warning(
                 'users, permissions, assign_permission:',
-                'permission {} does not exist yet'.format(self.permission)
+                f'permission {self.permission} does not exist yet',
             )
             new_permission(self.permission)
             assign_permission(group, self.permission)
@@ -139,14 +137,13 @@ class Permission:
             model.AccessGroupPermission.group == group,
             model.AccessGroupPermission.permission == self.permission
         )
-        if group != GUEST_GRP and not strict:
-            general = model.AccessGroupPermission.select().where(
-                model.AccessGroupPermission.group == AUTH,
-                model.AccessGroupPermission.permission == self.permission
-            )
-            return personal.wrapped_count() != 0 or general.wrapped_count() != 0
-        else:
+        if group == GUEST_GRP or strict:
             return personal.wrapped_count() != 0
+        general = model.AccessGroupPermission.select().where(
+            model.AccessGroupPermission.group == AUTH,
+            model.AccessGroupPermission.permission == self.permission
+        )
+        return personal.wrapped_count() != 0 or general.wrapped_count() != 0
 
     @staticmethod
     def list():
@@ -230,11 +227,7 @@ def get_user(user: str):
 
 def acc_grp(user):
     """get acces group from user or AUTH if user doesn't exist"""
-    result = get_user(user)
-    if result:
-        return result.access_group
-    else:
-        return AUTH
+    return result.access_group if (result := get_user(user)) else AUTH
 
 
 def add_acc_grp(name, aid=None):

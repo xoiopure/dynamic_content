@@ -42,8 +42,13 @@ def load_theme_conf(theme):
 
 
 def attach_theme_conf(dc_obj, default_theme=None):
-    default_theme = default_theme if not default_theme is None else _default_theme()
-    if not 'theme_config' in dc_obj.config or dc_obj.config['theme_config'] is None:
+    default_theme = (
+        default_theme if default_theme is not None else _default_theme()
+    )
+    if (
+        'theme_config' not in dc_obj.config
+        or dc_obj.config['theme_config'] is None
+    ):
         theme = dc_obj.config['theme'] = dc_obj.config['theme'] if 'theme' in dc_obj.config and dc_obj.config['theme'] else default_theme
         dc_obj.config['theme_config'] = load_theme_conf(theme)
         dc_obj.config['template_directory'] = dc_obj.config['theme_config']['path'] + '/' + dc_obj.config['theme_config'].get('template_directory', 'templates')
@@ -53,8 +58,10 @@ def compile_stuff(dc_obj):
     theme_path = '/theme/' + dc_obj.config['theme'] + '/'
 
     stylesheet_directory = theme_path + dc_obj.config['theme_config']['stylesheet_directory']
-    theme_stylesheets = (html.Stylesheet(stylesheet_directory + '/' + stylesheet)
-        for stylesheet in dc_obj.config['theme_config'].get('stylesheets', ()))
+    theme_stylesheets = (
+        html.Stylesheet(f'{stylesheet_directory}/{stylesheet}')
+        for stylesheet in dc_obj.config['theme_config'].get('stylesheets', ())
+    )
 
     if 'stylesheets' in dc_obj.context:
         dc_obj.context['stylesheets'] += theme_stylesheets
@@ -63,9 +70,9 @@ def compile_stuff(dc_obj):
 
     scripts_directory = theme_path + dc_obj.config['theme_config']['stylesheet_directory']
     theme_scripts = (
-        str(html.Script(src=scripts_directory + '/' + script))
+        str(html.Script(src=f'{scripts_directory}/{script}'))
         for script in dc_obj.config['theme_config'].get('scripts', ())
-        )
+    )
     if 'scripts' in dc_obj.context:
         dc_obj.context['scripts'] += theme_scripts
     else:
@@ -86,8 +93,11 @@ def compile_stuff(dc_obj):
 
 
 def theme_dc_obj(dc_obj, default_theme=_default_theme()):
-    if not 'theme_config' in dc_obj.config or not dc_obj.config['theme_config']:
-        if not 'theme' in dc_obj.config:
+    if (
+        'theme_config' not in dc_obj.config
+        or not dc_obj.config['theme_config']
+    ):
+        if 'theme' not in dc_obj.config:
             dc_obj.config['theme'] = default_theme
         attach_theme_conf(dc_obj)
         compile_stuff(dc_obj)

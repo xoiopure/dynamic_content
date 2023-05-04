@@ -61,21 +61,24 @@ class _Field(object):
 
     def access(self, page_id):
         db_obj = self.from_db(page_id)
-        return dict(content=html.ContainerElement(db_obj.content,
-            classes={'field', 'field-' + self.name}),
-            title=self.get_field_title()
-            )
+        return dict(
+            content=html.ContainerElement(
+                db_obj.content, classes={'field', f'field-{self.name}'}
+            ),
+            title=self.get_field_title(),
+        )
 
     def edit(self, page_id):
         try:
             db_obj = self.from_db(page_id)
             return dict(
                 name=self.name,
-                content=wysiwyg.WysiwygTextarea(db_obj.content,
-                    classes={'field', 'field-' + self.name, 'edit'},
-                    name=self.name
-                    )
-                )
+                content=wysiwyg.WysiwygTextarea(
+                    db_obj.content,
+                    classes={'field', f'field-{self.name}', 'edit'},
+                    name=self.name,
+                ),
+            )
         except:
             raise
 
@@ -94,8 +97,12 @@ class _Field(object):
         )
 
     def add(self):
-        return dict(name=self.name, content=wysiwyg.WysiwygTextarea(
-            classes={'field', 'field-' + self.name, 'edit'}, name=self.name))
+        return dict(
+            name=self.name,
+            content=wysiwyg.WysiwygTextarea(
+                classes={'field', f'field-{self.name}', 'edit'}, name=self.name
+            ),
+        )
 
     def process_add(self, page_type, page_id, content):
         model.field(self.name).create(

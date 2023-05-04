@@ -77,7 +77,9 @@ class Response(object):
     def __init__(self, body=None, code=200, headers:dict=None, cookies=None):
         self.body = body
         self.code = code
-        self.headers = h_mod.HeaderMap(headers) if not headers is None else h_mod.HeaderMap()
+        self.headers = (
+            h_mod.HeaderMap(headers) if headers is not None else h_mod.HeaderMap()
+        )
         if (isinstance(cookies, dict)
                 and cookies
                 and not isinstance(cookies, _cookies.BaseCookie)):
@@ -102,7 +104,7 @@ class Redirect(Response):
                 HttpResponseCodes.Found,
                 HttpResponseCodes.SeeOther
                 ):
-            raise TypeError('Expected code 301 or 302, got {}'.format(code))
+            raise TypeError(f'Expected code 301 or 302, got {code}')
         headers = headers if headers is not None else {}
         headers['Location'] = location
         super().__init__(code=code, cookies=cookies, headers=headers, body=None)

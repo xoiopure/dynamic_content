@@ -18,7 +18,11 @@ class Url:
         self.method = 'get'
         self.path = parsed.path
         self.location = UrlLocation(parsed.fragment)
-        self.query = UrlQuery(post) if not post is None else UrlQuery(parsed.query, safe='/')
+        self.query = (
+            UrlQuery(post)
+            if post is not None
+            else UrlQuery(parsed.query, safe='/')
+        )
 
     def __str__(self):
         return parse.urlunsplit(('', '', str(self.path), str(self.query), str(self.location)))
@@ -89,10 +93,7 @@ class UrlLocation:
         self._location = parse.unquote(value)
 
     def __str__(self):
-        if self._location:
-            return '#' + parse.quote(self.location)
-        else:
-            return ''
+        return f'#{parse.quote(self.location)}' if self._location else ''
 
     def __bool__(self):
         return bool(self.location)
@@ -109,7 +110,4 @@ class UrlQuery(dict):
             super().__init__(**parse.parse_qs(query))
 
     def __str__(self):
-        if self:
-            return parse.urlencode(self, doseq=True, safe=self.safe)
-        else:
-            return ''
+        return parse.urlencode(self, doseq=True, safe=self.safe) if self else ''

@@ -51,10 +51,7 @@ class Header:
         """
         assert isinstance(string, str)
         l = string.split('\n')
-        if len(l) == 1:
-            return cls.from_str(l[0])
-        else:
-            return cls.many_from_str(string)
+        return cls.from_str(l[0]) if len(l) == 1 else cls.many_from_str(string)
 
     @classmethod
     def many_from_dict(cls, d:dict):
@@ -79,14 +76,10 @@ class Header:
         """
         assert isinstance(t, (tuple, list))
         if len(t) == 2:
-            if isinstance(t[1], cls):
-                return t[1]
-            else:
-                return cls(*t)
+            return t[1] if isinstance(t[1], cls) else cls(*t)
         else:
             raise TypeError(
-                'tuple for header construction must have length 2, '
-                'had length {}'.format(len(t))
+                f'tuple for header construction must have length 2, had length {len(t)}'
             )
 
     from_list = from_tuple
@@ -130,13 +123,12 @@ class Header:
         :return: generator or Header
         """
         assert isinstance(t, (tuple, list))
-        if len(t) == 2 and isinstance(t[0], str):
-            try:
-                return cls.from_str(t[0]), cls.from_str(t[1])
-            except ValueError:
-                return cls.from_tuple(t)
-        else:
+        if len(t) != 2 or not isinstance(t[0], str):
             return cls.many_from_tuple(t)
+        try:
+            return cls.from_str(t[0]), cls.from_str(t[1])
+        except ValueError:
+            return cls.from_tuple(t)
 
     any_from_list = any_from_tuple
 
@@ -159,9 +151,7 @@ class Header:
         elif isinstance(raw, (set, frozenset)):
             return cls.many_from_set(raw)
         else:
-            raise TypeError(
-                'The type {} is not supported for auto construction'.format(type(raw))
-            )
+            raise TypeError(f'The type {type(raw)} is not supported for auto construction')
 
     def to_tuple(self):
         """
@@ -183,7 +173,7 @@ class Header:
     equals = __eq__
 
     def __str__(self):
-        return str(self.key) + ': ' + str(self.value)
+        return f'{str(self.key)}: {str(self.value)}'
 
 
 class HeaderMap(dict):

@@ -28,10 +28,8 @@ PASSWORD_INPUT = (
 LOGOUT_TARGET = '/login'
 
 LOGOUT_BUTTON = html.A(
-    'Logout',
-    href='/' + logout_prefix,
-    classes={'logout', 'button'}
-    )
+    'Logout', href=f'/{logout_prefix}', classes={'logout', 'button'}
+)
 
 
 _login_failed = ':redirect:/login/failed'
@@ -88,13 +86,10 @@ LoginHook.init_hook()
 
 def login_form():
     form = csrf.SecureForm(
-        html.TableElement(
-            USERNAME_INPUT,
-            PASSWORD_INPUT
-        ),
-        action='/' + login_prefix,
+        html.TableElement(USERNAME_INPUT, PASSWORD_INPUT),
+        action=f'/{login_prefix}',
         classes={'login-form'},
-        submit=html.SubmitButton(value='Login')
+        submit=html.SubmitButton(value='Login'),
     )
     for hook in LoginHook.get_hooks():
         res = hook.handle_form(form)
@@ -104,12 +99,10 @@ def login_form():
 
 
 LOGIN_COMMON = csrf.SecureForm(
-    html.ContainerElement(
-        *USERNAME_INPUT + PASSWORD_INPUT
-    ),
-    action='/' + login_prefix,
+    html.ContainerElement(*USERNAME_INPUT + PASSWORD_INPUT),
+    action=f'/{login_prefix}',
     classes={'login-form'},
-    submit=html.SubmitButton(value='Login')
+    submit=html.SubmitButton(value='Login'),
 )
 
 
@@ -176,10 +169,10 @@ def login_post(dc_obj, query):
         elif res is not None:
             return res
     else:
-        if not 'username' in query or not 'password' in query:
+        if 'username' not in query or 'password' not in query:
             return
         username, password = query['username'], query['password']
-        if not len(username) == 1 or not len(password) == 1:
+        if len(username) != 1 or len(password) != 1:
             return ':redirect:/login/failed'
         username = username[0]
         password = password[0]
@@ -204,17 +197,13 @@ def logout(dc_obj, query):
     user = dc_obj.request.client.user
     if user == users.GUEST:
         return ':redirect:/login'
-    else:
-        session.close_session(user)
-        time = datetime.datetime.utcnow() - datetime.timedelta(days=1)
+    session.close_session(user)
+    time = datetime.datetime.utcnow() - datetime.timedelta(days=1)
 
-        if 'destination' in query:
-            dest = query['destination'][0]
-        else:
-            dest = '/'
-        dc_obj.config.setdefault(
-            'cookies',
-            cookies.SimpleCookie()).load({'SESS': ''}
-            )
-        dc_obj.config['cookies']['SESS']['expires'] = time.strftime(_cookie_time_format)
-        return ':redirect:' + dest
+    dest = query['destination'][0] if 'destination' in query else '/'
+    dc_obj.config.setdefault(
+        'cookies',
+        cookies.SimpleCookie()).load({'SESS': ''}
+        )
+    dc_obj.config['cookies']['SESS']['expires'] = time.strftime(_cookie_time_format)
+    return f':redirect:{dest}'

@@ -22,10 +22,7 @@ class BaseElement:
 
     def __init__(self, html_type, additional: dict=None):
         self.html_type = html_type
-        if additional:
-            self._value_params = dict(additional)
-        else:
-            self._value_params = {}
+        self._value_params = dict(additional) if additional else {}
         self._params = set()
 
     @property
@@ -67,7 +64,7 @@ class BaseElement:
 
         :return: html formatted string
         """
-        return '<{}>'.format(self.render_head())
+        return f'<{self.render_head()}>'
 
     def __str__(self):
         return self.render()
@@ -194,12 +191,9 @@ class ContainerElement(list, BaseClassIdElement):
         :param value: value to transform
         :return: value or list_replacement(*value)
         """
-        if isinstance(value, str) or isinstance(value, dict):
+        if isinstance(value, (str, dict)):
             return value
-        if hasattr(value, '__iter__'):
-            return self.list_replacement(*value)
-        else:
-            return value
+        return self.list_replacement(*value) if hasattr(value, '__iter__') else value
 
     def render_content(self):
         """
@@ -215,11 +209,7 @@ class ContainerElement(list, BaseClassIdElement):
 
         :return: html formatted string
         """
-        return '<{}>{}</{}>'.format(
-            self.render_head(),
-            self.render_content(),
-            self.html_type
-        )
+        return f'<{self.render_head()}>{self.render_content()}</{self.html_type}>'
 
     def iter_content(self):
         """
@@ -229,8 +219,7 @@ class ContainerElement(list, BaseClassIdElement):
         """
         for a in self.content:
             if hasattr(a, 'to_iter'):
-                for b in a.to_iter():
-                    yield b
+                yield from a.to_iter()
             else:
                 yield a
 
@@ -239,10 +228,9 @@ class ContainerElement(list, BaseClassIdElement):
         Generator for the tags and the content
         :return:
         """
-        yield '<{}>'.format(self.render_head())
-        for a in self.iter_content():
-            yield a
-        yield '</{}>'.format(self.html_type)
+        yield f'<{self.render_head()}>'
+        yield from self.iter_content()
+        yield f'</{self.html_type}>'
 
 
 Div = functools.partial(ContainerElement, html_type='div')
@@ -636,7 +624,7 @@ class Option(ContainerElement):
         :return: string
         """
         if self.selected:
-            return super().render_head() + ' selected'
+            return f'{super().render_head()} selected'
         else:
             return super().render_head()
 
@@ -788,7 +776,7 @@ class Input(BaseClassIdElement):
 
         :return: string
         """
-        return '<{} />'.format(self.render_head())
+        return f'<{self.render_head()} />'
 
 
 class TextInput(Input):

@@ -92,9 +92,9 @@ class Session:
         :param token: str or bytes token
         :return: cls()
         """
-        if isinstance(token, str) and token == SESSION_INVALIDATED:
-            return None
         if isinstance(token, str):
+            if token == SESSION_INVALIDATED:
+                return None
             token = binascii.unhexlify(token.encode())
 
         try:

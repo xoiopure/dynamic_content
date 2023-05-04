@@ -123,7 +123,7 @@ class TemplateFormatter(object):
         :param dc_obj: DynamicContent instance
         :return: generator of paths
         """
-        view = view if view.endswith('.html') else view + '.html'
+        view = view if view.endswith('.html') else f'{view}.html'
         if view.startswith('/'):
             yield view[1:]
         else:

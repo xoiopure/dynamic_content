@@ -88,7 +88,7 @@ def create_user_action(dc_obj, post):
         else:
             args = post_to_args(post)
             u = users.add_user(**args)
-            return ':redirect:/users/' + str(u.oid)
+            return f':redirect:/users/{str(u.oid)}'
 
 
 post_to_args = lambda post: {
@@ -239,8 +239,7 @@ def edit_permissions_action(dc_obj, post):
     permissions_list = _sort_perm_list([(a.group.oid, a.permission) for a in model.AccessGroupPermission.select()])
     new_perm = []
     for item in post:
-        m = re.match(permission_structure, item)
-        if m:
+        if m := re.match(permission_structure, item):
             g = m.groups()
             # print('assigning permission ' + ' '.join([g[1].replace('-', ' '), 'to', str(g[0])]))
             new_perm.append((int(g[0]), g[1].replace('-', ' ')))
@@ -251,7 +250,7 @@ def edit_permissions_action(dc_obj, post):
     while new_perm and old_perm:
         i = new_perm.pop()
         j = old_perm.pop()
-        if not i == j:
+        if i != j:
             if i in old_perm:
                 old_perm.remove(i)
             else:

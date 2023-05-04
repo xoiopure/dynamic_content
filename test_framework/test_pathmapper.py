@@ -46,7 +46,7 @@ class TestMapper(unittest.TestCase):
             handler, args, kwargs = self.mt_mapper.resolve(request)
             self.assertTupleEqual(handler(*args, **kwargs), result)
 
-        for path, handler, teststring, result, typeargs in self.testpaths1[0:2]:
+        for path, handler, teststring, result, typeargs in self.testpaths1[:2]:
             handler = ControlFunction(handler, path, method, False, None)
             handler.typeargs = typeargs
             self.assertRaises(ControllerError, self.mt_mapper.add_path, path, handler)
@@ -70,7 +70,7 @@ class TestMapper(unittest.TestCase):
             handler, args, kwargs = self.t_mapper.resolve(request)
             self.assertTupleEqual(handler(*args, **kwargs), result)
 
-        for path, handler, teststring, result, targs in self.testpaths1[0:2]:
+        for path, handler, teststring, result, targs in self.testpaths1[:2]:
             handler = ControlFunction(handler, path, method, False, None)
             self.assertRaises(ControllerError, self.t_mapper.add_path, path, handler)
 
